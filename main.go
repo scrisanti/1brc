@@ -1,15 +1,29 @@
 package main
 
 import (
+	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"log/slog"
 	"os"
 	"os/user"
 	"path/filepath"
+	"time"
 )
 
 func main() {
+
+	// CLI flags
+	filename := flag.String("filename", "measurements_100M.txt", "Filename to the CSV file (in 'data' folder)")
+	flag.Parse()
+
+	// Validation
+	if *filename == "" {
+		fmt.Println("Error: --file is required")
+		flag.Usage()
+		os.Exit(1)
+	}
 
 	// Get User Home Dir
 	usr, err := user.Current()
@@ -40,4 +54,27 @@ func main() {
 		slog.Error(fmt.Sprintf("Error Getting CWD: %v", err))
 	}
 	slog.Debug("User CWD:", "cwd", cwd)
+
+	// ---------------------- //
+	start := time.Now()
+	output := bufio.NewWriter(logFile) // os.Stdout)
+	dataFilepath := filepath.Join(home, "Documents", "data", *filename)
+	st, err := os.Stat(dataFilepath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+	size := st.Size()
+
+	err = baseline(dataFilepath, output)
+
+	if err != nil {
+		fmt.Println("Process Failed!")
+	}
+
+	output.Flush()
+	elapsed := time.Since(start)
+	fmt.Fprintf(os.Stderr, "Processed %.1fMB in %s\n",
+		float64(size)/(1024*1024), elapsed)
+
 }
