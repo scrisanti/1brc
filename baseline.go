@@ -6,6 +6,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"sort"
 	"strconv"
@@ -20,7 +21,7 @@ func baseline(inputFilepath string, output io.Writer) error {
 
 	f, err := os.Open(inputFilepath)
 	if err != nil {
-		fmt.Printf("Cannot open input data file: %v", err)
+		slog.Error("Cannot open input data file!", "ERROR", err)
 		return err
 	}
 	defer f.Close()
@@ -62,17 +63,17 @@ func baseline(inputFilepath string, output io.Writer) error {
 	}
 	sort.Strings(stations)
 
-	fmt.Fprint(output, "{")
+	// fmt.Fprint(output, "{")
 	for i, station := range stations {
 		if i > 0 {
 			fmt.Fprint(output, ", ")
 		}
 		s := stationStats[station]
 		mean := s.sum / float64(s.count)
-		fmt.Fprint(output, "Station Stats:", "Station", station, "min", s.min, "mean", mean, "max", s.max)
+		slog.Debug("Station Stats:", "Station", station, "min", s.min, "mean", mean, "max", s.max)
 	}
 
-	fmt.Fprint(output, "}\n")
+	// fmt.Fprint(output, "}\n")
 	return nil
 
 }
