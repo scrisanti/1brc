@@ -1,15 +1,16 @@
 package main
 
 import (
-	"bufio"
+	// "1brc/logger"
 	"flag"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"os/user"
 	"path/filepath"
 	"time"
+
+	"github.com/scrisanti/1brc/logger"
 )
 
 func main() {
@@ -36,17 +37,17 @@ func main() {
 	logDir := filepath.Join(home, "logs")
 	logFilename := "log_1brc.log"
 	logFP := filepath.Join(logDir, logFilename)
-	logFile, err := os.OpenFile(logFP, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-
+	// logFile, err := os.OpenFile(logFP, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+	err = logger.InitLogger(logFP)
 	if err != nil {
 		panic(err)
 	}
-	defer logFile.Close()
+	// defer logFile.Close()
 
-	mw := io.MultiWriter(os.Stdout, logFile)
-	handler := slog.NewTextHandler(mw, &slog.HandlerOptions{Level: slog.LevelDebug})
-	logger := slog.New(handler)
-	slog.SetDefault(logger)
+	// mw := io.MultiWriter(os.Stdout, logFile)
+	//handler := slog.NewTextHandler(mw, &slog.HandlerOptions{Level: slog.LevelDebug})
+	// logger := slog.New(handler)
+	//slog.SetDefault(logger)
 
 	slog.Info("# ----- 1brc ----- # ")
 	cwd, err := os.Getwd()
@@ -57,7 +58,7 @@ func main() {
 
 	// ---------------------- //
 	start := time.Now()
-	output := bufio.NewWriter(logFile) // os.Stdout)
+	// output := bufio.NewWriter(logFile) // os.Stdout)
 	dataFilepath := filepath.Join(home, "Documents", "data", *filename)
 	st, err := os.Stat(dataFilepath)
 	if err != nil {
@@ -66,15 +67,15 @@ func main() {
 	}
 	size := st.Size()
 
-	err = baseline(dataFilepath, output)
+	err = baseline(dataFilepath)
 
 	if err != nil {
 		fmt.Println("Process Failed!")
 	}
 
-	output.Flush()
+	// output.Flush()
 	elapsed := time.Since(start)
-	fmt.Fprintf(os.Stderr, "Processed %.1fMB in %s\n",
-		float64(size)/(1024*1024), elapsed)
+	slog.Info("Processed File Successfully!", "size_MB",
+		float64(size)/(1024*1024), "process_time_s", elapsed)
 
 }
