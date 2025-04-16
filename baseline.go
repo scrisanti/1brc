@@ -4,8 +4,6 @@ package main
 
 import (
 	"bufio"
-	"fmt"
-	"io"
 	"log/slog"
 	"os"
 	"sort"
@@ -13,7 +11,7 @@ import (
 	"strings"
 )
 
-func baseline(inputFilepath string, output io.Writer) error {
+func baseline(inputFilepath string) error {
 	type stats struct {
 		min, max, sum float64
 		count         int64
@@ -64,10 +62,7 @@ func baseline(inputFilepath string, output io.Writer) error {
 	sort.Strings(stations)
 
 	// fmt.Fprint(output, "{")
-	for i, station := range stations {
-		if i > 0 {
-			fmt.Fprint(output, ", ")
-		}
+	for _, station := range stations {
 		s := stationStats[station]
 		mean := s.sum / float64(s.count)
 		slog.Debug("Station Stats:", "Station", station, "min", s.min, "mean", mean, "max", s.max)
